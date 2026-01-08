@@ -11,15 +11,16 @@ export default defineConfig({
 	},
 	plugins: [
 		tsconfigPaths(),
-		tailwindcss(),
 		tanstackStart(),
-		// nitro({
-		// 	vercel: {
-		// 		functions: {
-		// 			runtime: "bun1.x",
-		// 		},
-		// 	},
-		// }),
 		viteReact(),
+		process.env.NODE_ENV === "production" &&
+			nitro({
+				vercel: {
+					functions: {
+						runtime: "bun1.x",
+					},
+				},
+			}),
+		tailwindcss(),
 	],
 });

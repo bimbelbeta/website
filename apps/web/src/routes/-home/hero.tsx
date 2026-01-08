@@ -58,13 +58,7 @@ export function Hero() {
 			</div>
 
 			<MotionFloat delay={0.3}>
-				<Image
-					src="/images/hero-image.webp"
-					alt="Hero Illustration"
-					layout="fullWidth"
-					aspectRatio={16 / 9}
-					className=""
-				/>
+				<Image src="/images/hero-image.webp" alt="Hero Illustration" layout="fullWidth" className="" />
 			</MotionFloat>
 		</section>
 	);
