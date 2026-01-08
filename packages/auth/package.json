@@ -1,0 +1,33 @@
+{
+	"name": "@bimbelbeta/auth",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"auth:generate": "bunx @better-auth/cli@latest generate --output ../db/src/schema/auth.ts --config ./src/index.ts --yes",
+		"check-types": "bunx @typescript/native-preview --noEmit"
+	},
+	"devDependencies": {
+		"tsdown": "catalog:",
+		"@bimbelbeta/config": "workspace:*"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@bimbelbeta/db": "workspace:*",
+		"arktype": "catalog:",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"resend": "^6.6.0"
+	}
+}

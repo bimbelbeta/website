@@ -1,0 +1,44 @@
+{
+	"name": "@bimbelbeta/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"build": "tsdown",
+		"check-types": "bunx @typescript/native-preview --noEmit",
+		"db:push": "drizzle-kit push",
+		"db:studio": "drizzle-kit studio",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "drizzle-kit migrate",
+		"db:start": "docker compose up -d",
+		"db:watch": "docker compose up",
+		"db:stop": "docker compose stop",
+		"db:down": "docker compose down",
+		"db:reset": "docker compose down -v && docker compose up -d && sleep 2 && bun db:push && bun db:seed",
+		"db:seed": "bun run src/seed/index.ts"
+	},
+	"devDependencies": {
+		"@bimbelbeta/config": "workspace:*",
+		"@types/pg": "^8.16.0",
+		"drizzle-kit": "^0.31.8",
+		"drizzle-seed": "^0.3.1",
+		"tsdown": "catalog:"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"pg": "^8.14.1",
+		"arktype": "catalog:",
+		"dotenv": "catalog:",
+		"drizzle-orm": "catalog:"
+	}
+}

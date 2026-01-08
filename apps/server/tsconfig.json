@@ -1,0 +1,15 @@
+{
+	"extends": "@bimbelbeta/config/tsconfig.base.json",
+	"compilerOptions": {
+		"lib": ["ESNext", "DOM"],
+		"composite": true,
+		"outDir": "dist",
+		"strictNullChecks": true,
+		"paths": {
+			"@/*": ["./src/*"],
+			"*": ["./*"]
+		},
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx"
+	}
+}

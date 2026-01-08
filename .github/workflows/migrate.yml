@@ -1,0 +1,32 @@
+name: "Apply Schema Migrations"
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "packages/db/src/migrations/**"
+
+jobs:
+  migrate:
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+
+      - name: "Setup Bun"
+        uses: "oven-sh/setup-bun@v2"
+        with:
+          bun-version: "1.3.5"
+
+      - name: "Install dependencies & tooling"
+        run: |
+          bun install
+          bun install -g drizzle-orm drizzle-kit pg
+
+      - name: "Apply migrations"
+        working-directory: ./packages/db
+        env:
+          DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+        run: drizzle-kit migrate

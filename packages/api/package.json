@@ -1,0 +1,39 @@
+{
+	"name": "@bimbelbeta/api",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"types": "./dist/*.d.ts",
+			"default": "./src/*.ts"
+		}
+	},
+	"type": "module",
+	"scripts": {
+		"build": "tsdown",
+		"check-types": "bunx @typescript/native-preview --noEmit"
+	},
+	"devDependencies": {
+		"@bimbelbeta/config": "workspace:*",
+		"@types/midtrans-client": "^1.4.0",
+		"tsdown": "catalog:"
+	},
+	"peerDependencies": {
+		"typescript": "^5"
+	},
+	"dependencies": {
+		"@orpc/server": "catalog:",
+		"@orpc/client": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"@orpc/arktype": "catalog:",
+		"drizzle-orm": "catalog:",
+		"hono": "catalog:",
+		"dotenv": "catalog:",
+		"arktype": "catalog:",
+		"midtrans-client": "catalog:",
+		"@bimbelbeta/auth": "workspace:*",
+		"@bimbelbeta/db": "workspace:*"
+	}
+}

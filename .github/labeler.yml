@@ -1,0 +1,36 @@
+server:
+  - changed-files:
+      - any-glob-to-any-file: apps/server/**
+
+web:
+  - changed-files:
+      - any-glob-to-any-file: apps/web/**
+
+db:
+  - changed-files:
+      - any-glob-to-any-file: packages/db/**
+
+api:
+  - changed-files:
+      - any-glob-to-any-file: packages/api/**
+
+auth:
+  - changed-files:
+      - any-glob-to-any-file: packages/auth/**
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file: ["**/*.md", "**/*.{md,mdx,markdown}"]
+
+deps:
+  - changed-files:
+      - any-glob-to-any-file: ["**/package.json"]
+
+  # Add 'feature' label to any PR where the head branch name starts with `feature` or has a `feature` section in the name
+feature:
+  - head-branch: ["^feature", "feature"]
+
+# Add 'release' label to any PR that is opened against the `main` branch
+release:
+  - base-branch: "main"
+

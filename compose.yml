@@ -1,0 +1,56 @@
+name: bimbelbeta
+
+services:
+  # web:
+  #   platform: linux/amd64
+  #   build:
+  #     context: .
+  #     dockerfile: ./apps/web/Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   env_file: ./apps/web/.env.prod
+  #   environment:
+  #     TURBO_TEAM: ${TURBO_TEAM}
+  #     TURBO_TOKEN: ${TURBO_TOKEN}
+  #   depends_on:
+  #     server:
+  #       condition: service_started
+  #   restart: unless-stopped
+  #
+  server:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    ports:
+      - 3001:3001
+    environment:
+      TURBO_TEAM: ${TURBO_TEAM}
+      TURBO_TOKEN: ${TURBO_TOKEN}
+    env_file: ./apps/server/.env.prod
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:18.0-alpine
+    platform: linux/amd64
+    container_name: bimbelbeta-postgres
+    environment:
+      POSTGRES_DB: bimbelbeta
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - 6969:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  db:

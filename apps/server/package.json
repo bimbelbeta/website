@@ -1,0 +1,30 @@
+{
+	"name": "server",
+	"main": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"build": "bun build --production --target=bun --minify --sourcemap --bytecode ./src/index.ts --outdir ./dist",
+		"compile": "bun build --production --compile --minify --sourcemap --bytecode ./src/index.ts --outfile ./bin/server",
+		"dev": "bun run --hot --port=3001 ./src/index.ts ",
+		"start": "bun ./dist/index.js",
+		"check-types": "bunx @typescript/native-preview --noEmit"
+	},
+	"dependencies": {
+		"@bimbelbeta/api": "workspace:*",
+		"@bimbelbeta/auth": "workspace:*",
+		"@orpc/arktype": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"@orpc/server": "catalog:",
+		"arktype": "catalog:",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"hono": "catalog:",
+		"midtrans-client": "catalog:"
+	},
+	"devDependencies": {
+		"typescript": "catalog:",
+		"tsdown": "catalog:",
+		"@bimbelbeta/config": "workspace:*",
+		"@types/node": "^24.10.3"
+	}
+}
