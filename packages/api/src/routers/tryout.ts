@@ -1,45 +1,37 @@
 import { db } from "@bimbelbeta/db";
-import {
-	practicePack,
-	practicePackAttempt,
-	practicePackQuestions,
-	practicePackUserAnswer,
-} from "@bimbelbeta/db/schema/practice-pack";
 import { question, questionAnswerOption } from "@bimbelbeta/db/schema/question";
+import { tryout, tryoutAttempt, tryoutQuestions, tryoutUserAnswer } from "@bimbelbeta/db/schema/tryout";
 import { ORPCError } from "@orpc/client";
 import { type } from "arktype";
 import { and, desc, eq } from "drizzle-orm";
-import { authed } from "../index";
-import type { Question } from "../types/practice-pack";
+import { authed } from "..";
+import type { Question } from "../types/tryout";
 
 const list = authed
 	.route({
-		path: "/practice-packs",
+		path: "/tryouts",
 		method: "GET",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.handler(async ({ context }) => {
 		const attempts = await db
 			.select({
-				id: practicePack.id,
-				attemptId: practicePackAttempt.id,
-				title: practicePack.title,
-				status: practicePackAttempt.status ?? "not_started",
-				startedAt: practicePackAttempt.startedAt,
-				completedAt: practicePackAttempt.completedAt,
+				id: tryout.id,
+				attemptId: tryoutAttempt.id,
+				title: tryout.title,
+				status: tryoutAttempt.status ?? "not_started",
+				startedAt: tryoutAttempt.startedAt,
+				completedAt: tryoutAttempt.completedAt,
 			})
-			.from(practicePack)
+			.from(tryout)
 			.leftJoin(
-				practicePackAttempt,
-				and(
-					eq(practicePack.id, practicePackAttempt.practicePackId),
-					eq(practicePackAttempt.userId, context.session.user.id),
-				),
+				tryoutAttempt,
+				and(eq(tryout.id, tryoutAttempt.tryoutId), eq(tryoutAttempt.userId, context.session.user.id)),
 			);
 
 		if (!attempts)
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan latihan soal",
+				message: "Gagal menemukan tryout",
 			});
 
 		return attempts;
@@ -47,45 +39,42 @@ const list = authed
 
 const find = authed
 	.route({
-		path: "/practice-packs/{id}",
+		path: "/tryouts/{id}",
 		method: "GET",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.input(type({ id: "number" }))
 	.handler(async ({ input, context }) => {
 		// YES 50 INNER JOIN LAGI
 		const rows = await db
 			.select({
-				attemptId: practicePackAttempt.id,
-				title: practicePack.title,
-				status: practicePackAttempt.status,
-				startedAt: practicePackAttempt.startedAt,
-				completedAt: practicePackAttempt.completedAt,
-				questionId: practicePackQuestions.questionId,
-				questionOrder: practicePackQuestions.order,
+				attemptId: tryoutAttempt.id,
+				title: tryout.title,
+				status: tryoutAttempt.status,
+				startedAt: tryoutAttempt.startedAt,
+				completedAt: tryoutAttempt.completedAt,
+				questionId: tryoutQuestions.questionId,
+				questionOrder: tryoutQuestions.order,
 				questionContent: question.content,
 				questionDiscussion: question.discussion,
 				answerId: questionAnswerOption.id,
 				answerContent: questionAnswerOption.content,
-				userSelectedAnswerId: practicePackUserAnswer.selectedAnswerId,
+				userSelectedAnswerId: tryoutUserAnswer.selectedAnswerId,
 			})
-			.from(practicePack)
-			.innerJoin(practicePackAttempt, eq(practicePackAttempt.practicePackId, practicePack.id))
-			.innerJoin(practicePackQuestions, eq(practicePackQuestions.practicePackId, practicePack.id))
-			.innerJoin(question, eq(question.id, practicePackQuestions.questionId))
+			.from(tryout)
+			.innerJoin(tryoutAttempt, eq(tryoutAttempt.tryoutId, tryout.id))
+			.innerJoin(tryoutQuestions, eq(tryoutQuestions.tryoutId, tryout.id))
+			.innerJoin(question, eq(question.id, tryoutQuestions.questionId))
 			.innerJoin(questionAnswerOption, eq(questionAnswerOption.questionId, question.id))
 			.leftJoin(
-				practicePackUserAnswer,
-				and(
-					eq(practicePackUserAnswer.questionId, question.id),
-					eq(practicePackUserAnswer.attemptId, practicePackAttempt.id),
-				),
+				tryoutUserAnswer,
+				and(eq(tryoutUserAnswer.questionId, question.id), eq(tryoutUserAnswer.attemptId, tryoutAttempt.id)),
 			)
-			.where(and(eq(practicePack.id, input.id), eq(practicePackAttempt.userId, context.session.user.id)));
+			.where(and(eq(tryout.id, input.id), eq(tryoutAttempt.userId, context.session.user.id)));
 
 		if (rows.length === 0 || !rows[0])
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan latihan soal",
+				message: "Gagal menemukan tryout",
 			});
 
 		const pack = {
@@ -125,17 +114,17 @@ const find = authed
 
 const startAttempt = authed
 	.route({
-		path: "/practice-packs/{id}/start",
+		path: "/tryouts/{id}/start",
 		method: "POST",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.input(type({ id: "number" }))
 	.output(type({ message: "string", attemptId: "number" }))
 	.handler(async ({ input, context }) => {
 		const [attempt] = await db
-			.insert(practicePackAttempt)
+			.insert(tryoutAttempt)
 			.values({
-				practicePackId: input.id,
+				tryoutId: input.id,
 				userId: context.session.user.id,
 			})
 			.onConflictDoNothing()
@@ -143,20 +132,20 @@ const startAttempt = authed
 
 		if (!attempt)
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan sesi pengerjaan latihan soal",
+				message: "Gagal menemukan sesi pengerjaan tryout",
 			});
 
 		return {
-			message: "Memulai latihan soal",
+			message: "Memulai tryout",
 			attemptId: attempt.id,
 		};
 	});
 
 const saveAnswer = authed
 	.route({
-		path: "/practice-packs/{id}/{questionId}/save",
+		path: "/tryouts/{id}/{questionId}/save",
 		method: "POST",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.input(
 		type({
@@ -173,40 +162,38 @@ const saveAnswer = authed
 	.handler(async ({ input, context }) => {
 		const [currentAttempt] = await db
 			.select({
-				id: practicePackAttempt.id,
-				userId: practicePackAttempt.userId,
-				status: practicePackAttempt.status,
+				id: tryoutAttempt.id,
+				userId: tryoutAttempt.userId,
+				status: tryoutAttempt.status,
 			})
-			.from(practicePackAttempt)
-			.where(
-				and(eq(practicePackAttempt.practicePackId, input.id), eq(practicePackAttempt.userId, context.session.user.id)),
-			)
+			.from(tryoutAttempt)
+			.where(and(eq(tryoutAttempt.tryoutId, input.id), eq(tryoutAttempt.userId, context.session.user.id)))
 			.limit(1);
 
 		if (!currentAttempt)
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan sesi pengerjaan latihan soal",
+				message: "Gagal menemukan sesi pengerjaan tryout",
 			});
 
 		if (currentAttempt.userId !== context.session.user.id)
 			throw new ORPCError("UNAUTHORIZED", {
-				message: "Sesi pengerjaan latihan soal ini bukan milikmu",
+				message: "Sesi pengerjaan tryout ini bukan milikmu",
 			});
 
 		if (currentAttempt.status !== "ongoing")
 			throw new ORPCError("UNPROCESSABLE_CONTENT", {
-				message: "Tidak bisa menyimpan jawaban pada latihan soal yang tidak sedang berlangsung",
+				message: "Tidak bisa menyimpan jawaban pada tryout yang tidak sedang berlangsung",
 			});
 
 		await db
-			.insert(practicePackUserAnswer)
+			.insert(tryoutUserAnswer)
 			.values({
 				attemptId: currentAttempt.id,
 				questionId: input.questionId,
 				selectedAnswerId: input.selectedAnswerId,
 			})
 			.onConflictDoUpdate({
-				target: [practicePackUserAnswer.attemptId, practicePackUserAnswer.questionId],
+				target: [tryoutUserAnswer.attemptId, tryoutUserAnswer.questionId],
 				set: { selectedAnswerId: input.selectedAnswerId },
 			});
 
@@ -215,9 +202,9 @@ const saveAnswer = authed
 
 const submitAttempt = authed
 	.route({
-		path: "/practice-packs/{id}/submit",
+		path: "/tryouts/{id}/submit",
 		method: "POST",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.input(
 		type({
@@ -227,55 +214,53 @@ const submitAttempt = authed
 	.output(type({ message: "string" }))
 	.handler(async ({ context, input }) => {
 		const [attempt] = await db
-			.update(practicePackAttempt)
+			.update(tryoutAttempt)
 			.set({
 				completedAt: new Date(),
 				status: "finished",
 			})
-			.where(
-				and(eq(practicePackAttempt.practicePackId, input.id), eq(practicePackAttempt.userId, context.session.user.id)),
-			)
+			.where(and(eq(tryoutAttempt.tryoutId, input.id), eq(tryoutAttempt.userId, context.session.user.id)))
 			.returning();
 
 		if (!attempt)
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan sesi latihan soal",
+				message: "Gagal menemukan sesi tryout",
 			});
 
 		return {
-			message: "Berhasil mengumpul latihan soal",
+			message: "Berhasil mengumpul tryout",
 		};
 	});
 
 const history = authed
 	.route({
-		path: "/practice-packs/history",
+		path: "/tryouts/history",
 		method: "GET",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.handler(async ({ context }) => {
 		const attempts = await db
 			.select({
-				practicePackId: practicePackAttempt.practicePackId,
-				startedAt: practicePackAttempt.startedAt,
-				completedAt: practicePackAttempt.completedAt,
-				status: practicePackAttempt.status,
+				tryoutId: tryoutAttempt.tryoutId,
+				startedAt: tryoutAttempt.startedAt,
+				completedAt: tryoutAttempt.completedAt,
+				status: tryoutAttempt.status,
 			})
-			.from(practicePackAttempt)
-			.where(eq(practicePackAttempt.userId, context.session.user.id))
-			.orderBy(desc(practicePackAttempt.startedAt));
+			.from(tryoutAttempt)
+			.where(eq(tryoutAttempt.userId, context.session.user.id))
+			.orderBy(desc(tryoutAttempt.startedAt));
 
 		return {
-			packsFinished: attempts.filter((pack) => pack.status === "finished").length,
+			tryoutsFinished: attempts.filter((pack) => pack.status === "finished").length,
 			data: attempts,
 		};
 	});
 
-const historyByPack = authed
+const historyByTryout = authed
 	.route({
-		path: "/practice-packs/{id}/history",
+		path: "/tryouts/{id}/history",
 		method: "GET",
-		tags: ["Practice Packs"],
+		tags: ["Tryout"],
 	})
 	.input(
 		type({
@@ -286,42 +271,39 @@ const historyByPack = authed
 		// same query as .find()
 		const rows = await db
 			.select({
-				attemptId: practicePackAttempt.id,
-				title: practicePack.title,
-				questionId: practicePackQuestions.questionId,
-				questionOrder: practicePackQuestions.order,
+				attemptId: tryoutAttempt.id,
+				title: tryout.title,
+				questionId: tryoutQuestions.questionId,
+				questionOrder: tryoutQuestions.order,
 				questionContent: question.content,
 				questionDiscussion: question.discussion,
 				answerId: questionAnswerOption.id,
 				answerContent: questionAnswerOption.content,
 				answerIsCorrect: questionAnswerOption.isCorrect,
-				userSelectedAnswerId: practicePackUserAnswer.selectedAnswerId,
-				startedAt: practicePackAttempt.startedAt,
-				completedAt: practicePackAttempt.completedAt,
+				userSelectedAnswerId: tryoutUserAnswer.selectedAnswerId,
+				startedAt: tryoutAttempt.startedAt,
+				completedAt: tryoutAttempt.completedAt,
 			})
-			.from(practicePack)
-			.innerJoin(practicePackAttempt, eq(practicePackAttempt.practicePackId, practicePack.id))
-			.innerJoin(practicePackQuestions, eq(practicePackQuestions.practicePackId, practicePack.id))
-			.innerJoin(question, eq(question.id, practicePackQuestions.questionId))
+			.from(tryout)
+			.innerJoin(tryoutAttempt, eq(tryoutAttempt.tryoutId, tryout.id))
+			.innerJoin(tryoutQuestions, eq(tryoutQuestions.tryoutId, tryout.id))
+			.innerJoin(question, eq(question.id, tryoutQuestions.questionId))
 			.innerJoin(questionAnswerOption, eq(questionAnswerOption.questionId, question.id))
 			.leftJoin(
-				practicePackUserAnswer,
-				and(
-					eq(practicePackUserAnswer.questionId, question.id),
-					eq(practicePackUserAnswer.attemptId, practicePackAttempt.id),
-				),
+				tryoutUserAnswer,
+				and(eq(tryoutUserAnswer.questionId, question.id), eq(tryoutUserAnswer.attemptId, tryoutAttempt.id)),
 			)
 			.where(
 				and(
-					eq(practicePack.id, input.id),
-					eq(practicePackAttempt.userId, context.session.user.id),
-					eq(practicePackAttempt.status, "finished"),
+					eq(tryout.id, input.id),
+					eq(tryoutAttempt.userId, context.session.user.id),
+					eq(tryoutAttempt.status, "finished"),
 				),
 			);
 
 		if (rows.length === 0 || !rows[0])
 			throw new ORPCError("NOT_FOUND", {
-				message: "Gagal menemukan latihan soal",
+				message: "Gagal menemukan tryout",
 			});
 
 		const pack = {
@@ -372,12 +354,12 @@ const historyByPack = authed
 		return pack;
 	});
 
-export const practicePackRouter = {
+export const tryoutRouter = {
 	list,
 	find,
 	startAttempt,
 	submitAttempt,
 	saveAnswer,
 	history,
-	historyByPack,
+	historyByTryout,
 };

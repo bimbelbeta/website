@@ -7,6 +7,7 @@ import { practicePackRouter } from "./practice-pack";
 import { socialRouter } from "./social";
 import { subtestRouter } from "./subtest";
 import { transactionRouter } from "./transaction";
+import { tryoutRouter } from "./tryout";
 
 export const appRouter = {
 	healthCheck: pub
@@ -19,6 +20,7 @@ export const appRouter = {
 		.handler(() => {
 			return { message: "OK" };
 		}),
+	tryout: tryoutRouter,
 	social: socialRouter,
 	practicePack: practicePackRouter,
 	subtest: subtestRouter,
