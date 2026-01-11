@@ -4,7 +4,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/lexend";
 
 :root {
 	--radius: 0.625rem;
@@ -48,7 +48,7 @@
 }
 
 @theme inline {
-	--font-sans: "Plus Jakarta Sans Variable", sans-serif;
+	--font-sans: "Lexend Variable", sans-serif;
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);

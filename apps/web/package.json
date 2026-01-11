@@ -9,10 +9,10 @@
 		"check-types": "bunx @typescript/native-preview --noEmit"
 	},
 	"dependencies": {
-		"@floating-ui/react": "^0.27.16",
-		"@fontsource-variable/plus-jakarta-sans": "^5.2.8",
 		"@bimbelbeta/api": "workspace:*",
 		"@bimbelbeta/auth": "workspace:*",
+		"@floating-ui/react": "^0.27.16",
+		"@fontsource-variable/lexend": "^5.2.11",
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/tanstack-query": "^1.13.2",
